@@ -1,3 +1,7 @@
+# plant babies!
+
+is an exploration to deploying seedling plants onto the web 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
