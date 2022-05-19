@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v2
+        with:
+          ref: main
+
+      - name: Install nooode
+        uses: actions/setup-node@v3
+        with:
+            node-version: 16.15
+
+      - name: Install node dependencies
+        run: |
+          npm install
+      
+      - name: Build production assets
+        run: |
+          npm build
+
+      - name: Upload production assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: public
+          path: public
+
+
+  commit-build:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the build branch
+        uses: actions/checkout@v2
+        with: 
+          ref: website-build
+      
+      - name: Configure
+        run: |
+          git config --global user.email ${GITHUB_ACTOR}@what.who
+          git config --global user.name ${GITHUB_ACTOR}
+
+      - name: Download production assets
+        uses: actions/download-artifact@v3
+        with: 
+          name: public
+          path: public
+
+      - name: Commit and push new production assets
+        run: |
+          if [ $(git status --porcelain=v1 2>/dev/null | wc -l) != "0" ] ; then
+            git add -f public
+            git commit -m "gh-actions deployed a new website build"
+            git push --force https://${GITHUB_ACTOR}:$@github.com/${GITHUB_REPOSITORY}.git HEAD:website-build
+          fi
